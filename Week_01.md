@@ -38,48 +38,49 @@ SQLite에 대한 인터페이스를 제공하고 별도의 DB전용 프로그램
 ```
 import sqlite3
 ```
+---
 
 2. 파이썬에서 DB를 연결하기 위해서 connect()메소드를 활용합니다.
-
+```
 conn = sqlite3.connect('test.db')
+```
 conn은 DB와 연결된 하나의 세션을 보관합니다.
-
- 
-
- 
+---
 
 3. 해당 세션을 통해 DB와 소통하기 위한 cursur를 생성합니다.
-
+```
 cur = conn.cursor()
-4. 코드 내에서 SQL쿼리로 테이블을 만들어줍니다.
+```
+---
 
+4. 코드 내에서 SQL쿼리로 테이블을 만들어줍니다.
+```
 cur.execute("""CREATE TABLE hamburger (
                 name VARCHAR(32),
                 price INT,
                 kcal INT)
             """)
+```
 cursur의 excute 메소드를 사용해서 SQL 쿼리문을 넘겨줄 수 있습니다.
-
- 
+---
 
 5. 테이블에 데이터를 추가합니다.
-
+```
 cur.execute("INSERT INTO hamburger VALUES ('버거킹', 13000, 878)")
- 
+```
+---
 
 6. 마지막으로 commit을 해주면됩니다.
-
+```
 conn.commit()
+```
 SQL 질의가 끝났다면 commit을 해야 DB가 업데이트 됩니다.
-
 commit을 하기 전까진 DB에 데이터가 업데이트된 것이 아닌 임시로만 바뀐 것이므로 
-
 위에서 만들어놓은 connection 객체인 conn을 통해 commit 합니다.
-
+---
  
-
 전체적인 코드입니다.
-
+```
 import sqlite3
 
 conn = sqlite3.connnect('test.db')
@@ -93,7 +94,7 @@ cur.execute("""CREATE TABLE hamburger (
 cur.execute("INSERT INTO hamburger VALUES ('버거킹', 13000, 878)")
 
 conn.commit()
- 
+```
+---
 
-
-실제로 만들어진 결과물을 확인할 수 있습니다.
+![img1 daumcdn](https://user-images.githubusercontent.com/96939334/193820516-77aedb3a-36c6-4af9-945f-31efdcef5274.png)
