@@ -35,9 +35,9 @@ SQLite에 대한 인터페이스를 제공하고 별도의 DB전용 프로그램
 # DB 소통 과정 
  
 1. 우선 splite3 모듈을 import 해야합니다.
-'''
+```
 import sqlite3
-'''
+```
 
 2. 파이썬에서 DB를 연결하기 위해서 connect()메소드를 활용합니다.
 
