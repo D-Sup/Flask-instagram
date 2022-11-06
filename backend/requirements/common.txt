@@ -20,5 +20,5 @@ pyparsing==3.0.9
 python-dotenv==0.21.0
 pytz==2022.6
 six==1.16.0
-SQLAlchemy==1.4.42
+SQLAlchemy==1.4.40
 Werkzeug==2.2.2
