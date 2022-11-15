@@ -19,9 +19,10 @@ class PostSchema(ma.SQLAlchemyAutoSchema):
             "author_name",
         ]
         # 쓰기 전용 필드들의 정의
-        load_only = [
-            "author_id",    
-        ]
+        # load_only = [
+        #     "author_id",    
+        # ]
+        exclude = ("author_id",)
         load_instance = True
         include_fk = True
         ordered = True
