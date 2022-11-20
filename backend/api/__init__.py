@@ -22,6 +22,7 @@ from .resources.post import PostList, Post
 from .resources.user import UserRegister, UserLogin, RefreshToken
 from .resources.image import PostImageUpload, ProfileImageUpload, Image
 from .utils.image_upload import IMAGE_SET
+from .resources.comment import CommentList, CommentDetail
 
 def create_app():
     app = Flask(__name__)
@@ -88,12 +89,22 @@ def create_app():
             401,
         )
 
+    # 게시물 API
     api.add_resource(PostList, "/posts/")
     api.add_resource(Post, "/posts/<int:id>")
+    
+    # 회원가입, 로그인 API
     api.add_resource(UserRegister, "/register/")
     api.add_resource(UserLogin, "/login/")
     api.add_resource(RefreshToken, "/refresh/")
+    
+    # 이미지 업로드, 조회 API
     api.add_resource(PostImageUpload, "/upload/post/image/")
     api.add_resource(ProfileImageUpload, "/upload/profile/image/")
     api.add_resource(Image, "/statics/<path:path>")
+    
+    # 댓글 API
+    api.add_resource(CommentList, "/posts/<int:post_id>/comments/")
+    api.add_resource(CommentDetail, "/posts/<int:post_id>/comments/<int:comment_id>/")
+    
     return app
