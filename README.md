@@ -1,1 +1,1 @@
-# Flask-instagram
+# Flask-Study
