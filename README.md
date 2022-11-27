@@ -1,5 +1,6 @@
 Flask-Study
-[flask clone coding 1 (Flask-SQLAlchemy 3.0 변경사항)] (https://substory.tistory.com/50)
+
+[flask clone coding [1] (Flask-SQLAlchemy 3.0 변경사항)](https://substory.tistory.com/50)
 
 flask clone coding [2] (데이터 검증) https://substory.tistory.com/54
 
