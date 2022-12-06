@@ -19,8 +19,4 @@ Flask-Study
 
 [WSGI와 Werkzeug](https://substory.tistory.com/56)
 
-<<<<<<< HEAD
 [werkzeug 의 정규표현식](https://substory.tistory.com/57)
-=======
-[werkzeug 의 정규표현식](https://substory.tistory.com/57)
->>>>>>> b1fb989df6b230345cb9dca2b25e5e9890f15da5
