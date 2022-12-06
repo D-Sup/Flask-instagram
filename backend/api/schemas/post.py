@@ -1,6 +1,7 @@
 from api.ma import ma, Method
 from api.models.post import PostModel
 from api.models.user import UserModel
+from api.schemas.user import AuthorSchema
 from marshmallow import fields
 
 class PostSchema(ma.SQLAlchemyAutoSchema):
@@ -12,8 +13,7 @@ class PostSchema(ma.SQLAlchemyAutoSchema):
     
     created_at = fields.DateTime(format="%Y-%m=%d,%H:%M:%S")
     updated_at = fields.DateTime(format="%Y-%m=%d,%H:%M:%S")
-    
-    author_name = Method("get_author_name")
+    author = fields.Nested(AuthorSchema)
     
     def get_author_name(self, obj):
         return obj.author.username
@@ -21,9 +21,9 @@ class PostSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = PostModel
         # 보기 전용 필드들의 정의
-        dump_only = [
-            "author_name",
-        ]
+        # dump_only = [
+        #     "author_name",
+        # ]
         # 쓰기 전용 필드들의 정의
         # load_only = [
         #     "author_id",    
@@ -32,3 +32,4 @@ class PostSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         include_fk = True
         ordered = True
+

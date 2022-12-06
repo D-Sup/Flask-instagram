@@ -19,7 +19,7 @@ from .db import db
 from .ma import ma
 from .models import user, post, comment 
 from .resources.post import PostList, Post
-from .resources.user import UserRegister, UserLogin, RefreshToken
+from .resources.user import UserRegister, UserLogin, RefreshToken, MyPage
 from .resources.image import PostImageUpload, ProfileImageUpload, Image
 from .utils.image_upload import IMAGE_SET
 from .resources.comment import CommentList, CommentDetail
@@ -97,6 +97,9 @@ def create_app():
     api.add_resource(UserRegister, "/register/")
     api.add_resource(UserLogin, "/login/")
     api.add_resource(RefreshToken, "/refresh/")
+    
+    # 마이페이지 API
+    api.add_resource(MyPage, "/mypage/<int:id>/")
     
     # 이미지 업로드, 조회 API
     api.add_resource(PostImageUpload, "/upload/post/image/")
