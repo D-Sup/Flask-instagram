@@ -2,7 +2,9 @@ from flask_restful import Resource
 from flask_uploads import UploadNotAllowed
 from flask import request, send_file, send_from_directory, url_for
 from flask_jwt_extended import jwt_required, get_jwt_identity
-import time, traceback, os
+import time
+import traceback
+import os
 from api.utils import image_upload
 from api.schemas.image import ImageSchema
 
@@ -40,8 +42,8 @@ class AbstractImageUpload(Resource):
         except UploadNotAllowed:
             extension = image_upload.get_extension(data["image"])
             return {"message": f"{extension} 는 적절하지 않은 확장자 이름입니다."}, 400
-        
-        
+
+
 class PostImageUpload(AbstractImageUpload):
     """
     게시물 이미지를 업로드합니다.
@@ -62,8 +64,8 @@ class ProfileImageUpload(AbstractImageUpload):
     @jwt_required()
     def post(self):
         return super(ProfileImageUpload, self).post()
-    
-    
+
+
 class Image(Resource):
     def get(self, path):
         """
@@ -79,6 +81,9 @@ class Image(Resource):
             return send_file(image_upload.get_path(filename=filename, folder=folder))
         except FileNotFoundError:
             return {"message": "존재하지 않는 이미지 파일입니다."}, 404
+
+    def delete(self, filename):
+        pass
 
     def delete(self, path):
         """

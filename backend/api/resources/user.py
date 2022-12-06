@@ -14,7 +14,80 @@ from werkzeug.security import check_password_hash
 
 register_schema = UserRegisterSchema()
 user_schema = UserSchema()
-import re
+
+
+class MyPage(Resource):
+    """
+    마이페이지를 처리합니다.
+
+    자신의 프로필 페이지는 자신만 접근할 수 있어야 합니다.
+    """
+    @classmethod
+    @jwt_required()
+    def get(cls, id):
+        """
+        나의 마이페이지를 조회합니다.
+        남의 마이페이지를 조회하려고 시도할 시, 권한이 없다는 에러 처리를 해줍니다.
+        """
+        username = get_jwt_identity()
+        user = UserModel.find_by_username(username=username)
+        if not user:
+            return {"Error": "사용자를 찾을 수 없습니다."}, 404
+        if id == user.id:
+            return user_schema.dump(user), 200
+        return {"Error": "잘못된 접근입니다."}, 403
+
+    @classmethod
+    @jwt_required()
+    def put(cls, id):
+        """
+        특정 유저의 마이페이지 정보를 수정합니다.
+        """
+        user_json = request.get_json()
+        validate_result = user_schema.validate(user_json)
+        if validate_result:
+            return validate_result, 400
+        user = UserModel.find_by_username(get_jwt_identity())
+        # 사용자 존재 여부 체크
+        if not user:
+            return {"Error": "사용자를 찾을 수 없습니다."}, 404
+        # 수정은 자신의 마이페이지에서만 가능
+        request_user = UserModel.find_by_username(get_jwt_identity())
+        if id == request_user.id:
+            user.update_to_db(user_json)
+            return user_schema.dump(user)
+        else:
+            return {"Error": "잘못된 접근입니다."}, 403
+
+
+class UserLogin(MethodView):
+    def post(self):
+        data = request.get_json()
+        user = UserModel.find_by_email(data["email"])
+
+        additional_claims = {"user_id": user.id}
+
+        if user and check_password_hash(user.password, data["password"]):
+            access_token = create_access_token(
+                identity=user.username,
+                fresh=True,
+                additional_claims=additional_claims,
+            )
+            refresh_token = create_refresh_token(
+                identity=user.username, additional_claims=additional_claims
+            )
+
+            if user.token:
+                token = user.token[0]
+                token.refresh_token_value = refresh_token
+                token.save_to_db()
+            else:
+                new_token = RefreshTokenModel(
+                    user_id=user.id, refresh_token_value=refresh_token)
+                new_token.save_to_db()
+            return {"access_token": access_token, "refresh_token": refresh_token}
+        return {"Unauthorized": "이메일과 비밀번호를 확인하세요"}, 401
+
 
 class UserRegister(Resource):
     """
@@ -38,55 +111,19 @@ class UserRegister(Resource):
             elif UserModel.find_by_email(data["email"]):
                 return {"message": "중복된 이메일입니다."}, 400
             else:
-                if len(data["password"]) >= 10:
-                    return {"message": "비밀번호 자릿수는 10자리 이하여야합니다."}, 400
                 password = generate_password_hash(data["password"])
-                
-                if bool(re.search("[^a-zA-Z0-9]", data["username"])):
-                    return {"message": "닉네임은 영문자와 숫자로만 구성되어 있어야 합니다."}, 400
-                
-                if '@' not in data["email"]:
-                    return {"message": "이메일에 '@' 가 빠졌습니다."}, 400
                 user = register_schema.load(
                     {
-                       "username" : data["username"],
-                        "email" : data["email"],
-                        "password" : password,
-                        "password_confirm" : password, 
+                        "username": data["username"],
+                        "email": data["email"],
+                        "password": password,
+                        "password_confirm": password,
                     }
                 )
             user.save_to_db()
             return {"success": f"{user.username} 님, 가입을 환영합니다!"}, 201
-        
-        
-class UserLogin(MethodView):
-    def post(self):
-        data = request.get_json()
-        user = UserModel.find_by_email(data["email"])
-        
-        additional_claims = {"user_id": user.id}
-        
-        if user and check_password_hash(user.password, data["password"]):
-            access_token = create_access_token(
-                identity=user.username, 
-                fresh=True,
-                additional_claims=additional_claims,
-            )
-            refresh_token = create_refresh_token(
-                identity=user.username, additional_claims=additional_claims
-            )
-            
-            if user.token:
-                token = user.token[0]
-                token.refresh_token_value = refresh_token
-                token.save_to_db()
-            else:
-                new_token = RefreshTokenModel(user_id=user.id, refresh_token_value=refresh_token)
-                new_token.save_to_db()
-            return {"access_token" : access_token, "refresh_token" : refresh_token}, 200
-            
-        return {"Unauthorized" : "이메일과 비밀번호를 확인하세요."}, 401
-    
+
+
 class RefreshToken(MethodView):
     """
     Refresh Token 을 받아 검증하고,
@@ -109,61 +146,13 @@ class RefreshToken(MethodView):
             return {"Unauthorized": "Refresh Token은 2회 이상 사용될 수 없습니다."}, 401
         # access token, refresh token 발급
         additional_claims = {"user_id": user.id}
-        
+
         access_token = create_access_token(
-            identity=identity,
-            fresh=True,
-            additional_claims=additional_claims,
-        )
+            identity=identity, fresh=True, additional_claims=additional_claims)
         refresh_token = create_refresh_token(
-            identity=user.username, additional_claims=additional_claims
-        )
+            identity=user.username, additional_claims=additional_claims)
         if user:
             token = user.token[0]
             token.refresh_token_value = refresh_token
             token.save_to_db()
             return {"access_token": access_token, "refresh_token": refresh_token}, 200
-    
-    
-class MyPage(Resource):
-    '''
-    마이페이지를 처리합니다.
-    
-    내 프로필 페이지는 나만 접근할 수 있어야 합니다.
-    '''
-    @classmethod
-    @jwt_required()
-    def get(cls, id):
-        '''
-        나의 마이페이지를 조회합니다.
-        남의 마이페이지를 조회하려고 시도한다면, 권한이 없다는 에러 처리가 되어야 합니다.
-        '''
-        username = get_jwt_identity()
-        user = UserModel.find_by_username(username=username)
-        if not user:
-            return {"Error": "사용자를 찾을 수 없습니다."}, 404
-        if id == user.id:
-            return user_schema.dump(user), 200
-        return {"Error": "잘못된 접근입니다."}, 403
-    @classmethod
-    @jwt_required()
-    def put(cls, id):
-        '''
-        특정 유저의 마이페이지 정보를 수정합니다.
-        '''
-        user_json = request.get_json()
-        validate_result = user_schema.validate(user_json)
-        if validate_result:
-            return validate_result, 400
-        user = UserModel.find_by_username(get_jwt_identity())
-        # 사용자의 존재 여부를 먼저 체크한다.
-        if not user:
-            return {"Error": "사용자를 찾을 수 없습니다."}, 404
-        # 수정은 자신의 마이페이지에 한해서만 진행할 수 있다.
-        request_user = UserModel.find_by_username(get_jwt_identity())
-        if id == request_user.id:
-            user.update_to_db(user_json)
-            return user_schema.dump(user)
-        else:
-            return {"Error": "잘못된 접근입니다."}, 403
-    

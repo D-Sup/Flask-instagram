@@ -1,6 +1,7 @@
+from api.ma import ma
 from api.models.comment import CommentModel
 from marshmallow import fields
-from api.ma import ma, Method
+from api.ma import ma, MethodField
 
 
 class CommentSchema(ma.SQLAlchemyAutoSchema):
@@ -11,7 +12,7 @@ class CommentSchema(ma.SQLAlchemyAutoSchema):
     created_at = fields.DateTime(format="%Y-%m-%d,%H:%M:%S")
     updated_at = fields.DateTime(format="%Y-%m-%d,%H:%M:%S")
 
-    author_name = Method("get_author_name")
+    author_name = MethodField("get_author_name")
 
     def get_author_name(self, obj):
         return obj.author.username

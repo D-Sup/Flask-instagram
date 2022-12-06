@@ -1,23 +1,23 @@
 from flask_restful import Resource, request
 from api.models.post import PostModel, db
+from api.models.user import UserModel
 from api.schemas.post import PostSchema
 from marshmallow import ValidationError
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from api.models.user import UserModel
-from xml.dom import ValidationErr
 
 post_schema = PostSchema()
 post_list_schema = PostSchema(many=True)
 
+
 class Post(Resource):
     @classmethod
-    @jwt_required
+    @jwt_required()
     def get(cls, id):
         post = PostModel.find_by_id(id)
         if post:
             return post_schema.dump(post), 200
-        return {"Error" : "게시물을 찾을 수 없습니다."}, 404   
-    
+        return {"Error": "게시물을 찾을 수 없습니다."}, 404
+
     @classmethod
     @jwt_required()
     def put(cls, id):
@@ -45,48 +45,46 @@ class Post(Resource):
             return {"Error": "게시물은 작성자만 수정할 수 있습니다."}, 403
 
         return post_schema.dump(post), 200
-        
+
     @classmethod
     @jwt_required()
     def delete(cls, id):
+        post = PostModel.find_by_id(id)
         username = get_jwt_identity()
         author_id = UserModel.find_by_username(username).id
-        post = PostModel.find_by_id(id)
         if post:
             if post.author_id == author_id:
                 post.delete_from_db()
                 return {"message": "게시물이 성공적으로 삭제되었습니다."}, 200
             else:
                 return {"Error": "게시물은 작성자만 삭제할 수 있습니다."}, 403
-        return {"Error" : "게시물을 찾을 수 없습니다."}, 404
-   
-   
+        return {"Error": "게시물을 찾을 수 없습니다."}, 404
+
+
 class PostList(Resource):
     @classmethod
-    @jwt_required
-    def get(cls):     
+    @jwt_required()
+    def get(cls):
         page = request.args.get("page", type=int, default=1)
         ordered_posts = PostModel.query.order_by(PostModel.id.desc())
-        pagination = ordered_posts.paginate(page=page, per_page=10, error_out=False)
-        result = post_list_schema.dump(pagination)
+        paginagion = ordered_posts.paginate(page=page, per_page=10, error_out=False)
+        result = post_list_schema.dump(paginagion)
         return result
-        # print(type(post_list_schema.dump(PostModel.find_all())))
-        # return {"posts" : post_list_schema.dump(PostModel.find_all())}, 200    
-    
+
     @classmethod
     @jwt_required()
     def post(cls):
-        post_json = request.get_json()  #json 데이터를 받아옴
+        post_json = request.get_json()
         username = get_jwt_identity()
         author_id = UserModel.find_by_username(username).id
         print(author_id)
-        try:         
-            new_post = post_schema.load(post_json)  #게시물 인스턴스로 변환
+        try:
+            new_post = post_schema.load(post_json)
             new_post.author_id = author_id
-        except ValidationErr as err:
+        except ValidationError as err:
             return err.messages, 400
         try:
-            new_post.save_to_db()   #변환한 것을 데이터베이스에 저장
+            new_post.save_to_db()
         except:
-            return {"Error" : "저장에 실패하였습니다."}, 500
+            return {"Error": "저장에 실패하였습니다."}, 500
         return post_schema.dump(new_post), 201
