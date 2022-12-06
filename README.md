@@ -36,11 +36,11 @@
 <br>
 
 - JWT 구현 (access token / refresh token 발급)
-- 이미지 업로드
-- 무한 스크롤
-- 게시물 API
-- 댓글 API
+- 댓글 API 
 - 로그인 처리
+- 이미지 업로드
+- 게시물 API에 유저 프로필 사진 표시
+- 무한 스크롤
 
 <br><br>
 
