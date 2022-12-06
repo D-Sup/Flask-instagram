@@ -2,6 +2,16 @@
 <div align="center"> 
  <img src="https://user-images.githubusercontent.com/96939334/205963982-6ba2a519-1f5f-4eff-89f8-2c0072f94e2d.png" alt="Logo" width="80" height="80">
  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 <h2 align="center">Instagram clone coding </h2>
  
 </div>
