@@ -1,10 +1,7 @@
 <br>
 <div align="center"> 
  <img src="https://user-images.githubusercontent.com/96939334/205963982-6ba2a519-1f5f-4eff-89f8-2c0072f94e2d.png" width="80" height="80">
-<h2 align="center">Instagram clone coding </h2>
 
- 
-</br>
 <h3> preview <h3>
 <img src="https://user-images.githubusercontent.com/96939334/205965358-7f08b8c6-2068-4626-824d-91e3c46a810d.png" width="300" object-fit="fill">
 </div>
