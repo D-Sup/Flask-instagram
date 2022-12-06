@@ -4,7 +4,7 @@
 <h2 align="center">Instagram clone coding </h2>
 
  
-<br>
+</br>
 <h3> preview <h3>
 <img src="https://user-images.githubusercontent.com/96939334/205965358-7f08b8c6-2068-4626-824d-91e3c46a810d.png" width="300" object-fit="fill">
 </div>
