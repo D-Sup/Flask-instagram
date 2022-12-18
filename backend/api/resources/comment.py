@@ -37,7 +37,7 @@ class CommentList(Resource):
             new_comment = comment_schema.load(comment_json)
             new_comment.author_id = author_id
             new_comment.post_id = post_id
-        except ValidationErr as err:
+        except ValidationError as err:
             return err.messages, 400
         try:
             new_comment.save_to_db()

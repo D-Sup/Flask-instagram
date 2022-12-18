@@ -1,6 +1,22 @@
 from ..db import db
 from sqlalchemy.sql import func
+from sqlalchemy import  or_
 
+post_to_liker = db.Table(
+    "post_liker",
+    db.Column(
+        "user_id",
+        db.Integer,
+        db.ForeignKey("User.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    db.Column(
+        "post_id",
+        db.Integer,
+        db.ForeignKey("Post.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
 
 class PostModel(db.Model):
     """
@@ -24,17 +40,38 @@ class PostModel(db.Model):
                            default=func.now(), onupdate=func.now())
     author_id = db.Column(db.Integer, db.ForeignKey(
         "User.id", ondelete="CASCADE"), nullable=False)
-    author = db.relationship("UserModel", backref="post_author")
+    author = db.relationship("UserModel", backref="post_set")
     comment_set = db.relationship(
         "CommentModel", backref="post", passive_deletes=True, lazy="dynamic")
     image = db.Column(db.String(255))
-
+    liker = db.relationship(
+        "UserModel",
+        secondary=post_to_liker,
+        backref=db.backref("post_liker_set", lazy="dynamic"),
+        lazy="dynamic"
+    )
+    
+    @classmethod
+    def filter_by_followed(cls, followed_users):
+        '''
+        현재 사용자가 팔로우한 모든 사람들의 리스트를 받아서,
+        해당 사람들이 작성한 게시물을 id의 역숙으로 정렬하여 리턴
+        '''
+        return cls.query.filter(
+            or_(cls.author == user for user in followed_users)
+        ).order_by(PostModel.id.desc())
+        
     @classmethod
     def find_by_id(cls, id):
         """
         데이터베이스에서 id 로 특정 게시물 찾기
         """
         return cls.query.filter_by(id=id).first()
+
+    @classmethod
+    def filter_by_string(cls, string):
+        posts = cls.query.filter(cls.content.like(string) | cls.title.like(string))
+        return posts
 
     @classmethod
     def find_all(cls):
@@ -59,5 +96,37 @@ class PostModel(db.Model):
             setattr(self, key, value)
         db.session.commit()
 
+    def do_like(self, user):
+        """
+        특정 게시물에 좋아요를 누름
+        """
+        if not self.is_like(user):
+            self.liker.append(user)
+            db.session.commit()
+            return self
+
+    def cancel_like(self, user):
+        """
+        특정 게시물에 좋아요를 취소함
+        """
+        if self.is_like(user):
+            self.liker.remove(user)
+            db.session.commit()
+            return self
+
+    def is_like(self, user):
+        """
+        특정 게시물에 좋아요를 눌렀는지에 대한 여부 반환
+        """
+        return (
+            self.liker.filter(post_to_liker.c.user_id == user.id).count() > 0
+        )
+
+    def get_liker_count(self):
+        """
+        특정 게시물의 좋아요 숫자를 반환
+        """
+        return self.liker.count()
+    
     def __repr__(self):
         return f"<Post Object : {self.title}>"

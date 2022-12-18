@@ -124,7 +124,7 @@ let ACCESS_TOKEN = localStorage.getItem('access_token');
   
     // 프로필 정보 수정 요청
     const response = await fetch(
-      "http://127.0.0.1:5000/mypage/6/",
+      "http://127.0.0.1:5000/mypage/10/",
       requestOptions
     );
     console.log(response.status);
